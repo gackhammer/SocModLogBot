@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "PythonApplication1", "PythonApplication1\PythonApplication1.pyproj", "{D8577E79-F4B5-4775-A296-87AA915FB2B7}"
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "ModLogBot", "PythonApplication1\ModLogBot.pyproj", "{D8577E79-F4B5-4775-A296-87AA915FB2B7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
