@@ -15,8 +15,11 @@ subreddit = r.subreddit(subreddit_name)
 
 redditBot = RedditBot(subreddit_name);
 
+#Set to true if we want to have this bot write some stats on the submission
 bWriteComments = False;
 
+
+#Begin main loop for the bot to check all submissions
 for submission in subreddit.hot():
 	submission.comments.replace_more(limit=None)	
 	redditBot.checkComments(submission.comments)
@@ -27,46 +30,5 @@ for submission in subreddit.hot():
 		redditBot.submitReply(reply, submission);
 	redditBot.refresh();
 
-'''
-if not os.path.isfile("posts_replied_to.txt"):
-	posts_replied_to = []
-
-else:
-	with open("posts_replied_to.txt", "r") as f:
-		posts_replied_to = f.read()
-		posts_replied_to = posts_replied_to.split("\n")
-		posts_replied_to = list(filter(None, posts_replied_to))
-
-'''
 
 
-
-
-'''
-if re.search("i love python", comment.body.lower(), re.IGNORECASE):
-	comment.reply("Botty bot says: Me too!!")
-	print("Bot replying to : ", submission.title)
-	posts_replied_to.append(submission.id)
-'''
-
-'''
-with open("posts_replied_to.txt", "w") as f:
-	for post_id in posts_replied_to:
-		f.write(post_id + "\n")
-
-'''
-
-
-
-
-
-
-'''
-for submission in subreddit.hot(limit=2):
-    print("Title: ", submission.title)
-    print("Text: ", submission.selftext)
-    print("Score: ", submission.score)
-    print("---------------------------------\n")
-'''
-
-    

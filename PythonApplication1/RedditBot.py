@@ -17,9 +17,12 @@ class RedditBot(object):
 		self.sheetHandler= GoogleSpreadsheetHandler();
 		self.subredditName = subreddit_name;
 
+    # Return ceddit link to show comment in ceddit.com 
 	def getCedditURL(self, comment):
 		return "https://www.ceddit.com/r/" + self.subredditName + "/comments/" + comment.submission.id + "/_/" + comment.id;
 
+
+    # Check to see if the submission has been removed by lack of author name or submission was banned
 	def submission_is_removed(self, sub_id):
 		s = r.get_submission(submission_id=sub_id)
 		try:
@@ -35,7 +38,7 @@ class RedditBot(object):
 		else:
 			return False
 
-
+    # Check to see if the comment has been removed by lack of author name or comment was banned
 	def comment_is_removed(self,comment):
 		try:
 			author = str(comment.author.name)
@@ -50,15 +53,17 @@ class RedditBot(object):
 
 
 
-
+    # Return date when submission was submitted
 	def get__submission_date(self,submission):
 		time = submission.created
 		return datetime.datetime.time
 
+    # Return date when comment was submitted
 	def get_comment_date(self,comment):
 		time = comment.created
 		return str(datetime.datetime.time)
 
+    # Loops through Comments object to handle removed comments and logging them into the Google Spreadsheet
 	def checkComments(self,comments):
 		for comment in comments:
 			self.checkIfItsMyComment(comment)
@@ -70,21 +75,25 @@ class RedditBot(object):
 				self.sheetHandler.writeToSheet(comment.submission.id, comment.id, self.getCedditURL(comment), authorName, comment.body, bannedBy );
 			self.checkComments(comment.replies)
 
+    # Return comma separated string of mods
 	def printModsWhoBanned(self):
 		return  (','.join([str(x) for x in self.modsWhoDeleted]))
 
+    # Returns true if this comment was ours
 	def checkIfItsMyComment(self,comment):
 		if comment.author == "gackhammer3":
 			self.myOwnComment = comment
 			return True
 		return False
 
+    # Re-initialize class variables
 	def refresh(self):
 		self.totalComments = 0
 		self.modsWhoDeleted = []
 		self.myOwnComment = None
 		self.deletedCommentsList = []
 
+    # Returns string to post as comment to submission that we're checking
 	def createReply(self):
 		d = datetime.date.today()
 		d = datetime.date.today()
@@ -100,6 +109,7 @@ class RedditBot(object):
 		print(strBotReply)
 		return strBotReply
 
+    # Submits a reply to a submission
 	def submitReply(self,reply, submission):
 		try:
 			if self.myOwnComment is None:
