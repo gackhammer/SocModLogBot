@@ -6,6 +6,7 @@ import json
 import datetime
 from time import gmtime, strftime
 from GoogleSpreadsheetHandler import GoogleSpreadsheetHandler
+from SQLHandler import SQLHandler
 
 class RedditBot(object):
 
@@ -15,6 +16,7 @@ class RedditBot(object):
 		self.myOwnComment = None
 		self.deletedCommentsList = []
 		self.sheetHandler= GoogleSpreadsheetHandler();
+		self.SQLHandler = SQLHandler();
 		self.subredditName = subreddit_name;
 
     # Return ceddit link to show comment in ceddit.com 
@@ -68,11 +70,14 @@ class RedditBot(object):
 		for comment in comments:
 			self.checkIfItsMyComment(comment)
 			self.totalComments += 1
+			if(self.SQLHandler.checkCommentID(comment.submission.id, comment.id)):
+			    continue;			
 			if self.comment_is_removed(comment):
 				self.deletedCommentsList.append(comment)
 				authorName = "[Deleted]" if comment.author is None else comment.author.name
 				bannedBy = "" if comment.banned_by is None else comment.banned_by
-				self.sheetHandler.writeToSheet(comment.submission.id, comment.id, self.getCedditURL(comment), authorName, comment.body, bannedBy );
+				self.SQLHandler.insertRow(comment.submission.id, comment.id, self.getCedditURL(comment), authorName, comment.body, bannedBy);
+				#self.sheetHandler.writeToSheet(comment.submission.id, comment.id, self.getCedditURL(comment), authorName, comment.body, bannedBy );
 			self.checkComments(comment.replies)
 
     # Return comma separated string of mods
@@ -118,5 +123,9 @@ class RedditBot(object):
 				self.myOwnComment.edit(reply)
 		except: 
 			print("archived post")	
+
+	def writeRowsToSpreadsheet(self):
+		rows = self.SQLHandler.getAllFromThisIteration();
+		self.sheetHandler.writeToSheet(rows);
 
 	

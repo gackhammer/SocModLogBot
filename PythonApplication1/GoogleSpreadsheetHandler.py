@@ -53,7 +53,7 @@ class GoogleSpreadsheetHandler(object):
             print('Storing credentials to ' + credential_path)
         return credentials
 
-    def writeToSheet(self, submissionID, commentID, link, author, body, banned_by):
+    def writeToSheet(self, rows):
         """Shows basic usage of the Sheets API.
 
         Creates a Sheets API service object and prints the names and majors of
@@ -69,45 +69,18 @@ class GoogleSpreadsheetHandler(object):
 
 
         spreadsheet_id = '1YuAjfZ04yUnb0zZH-v784D0a2Xo3M5-QBRNEkFM210U'
-        sheet_metadata = service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
-        sheets = sheet_metadata.get('sheets', '')
-        range_name = '!A' + self.first_empty_row(sheet_metadata[0]) + ':G'
 
-        values = [
-            [
-                submissionID, commentID, link, author, body, banned_by
-            ]
-        ]
+        range_name = '!A2:I'
+        #range_name = '!A' + self.first_empty_row(sheets[0]) + ':G'
+
         body = {
-            'values': values
+            'values': rows
         }
 
         value_input_option = "USER_ENTERED";
-        result = service.spreadsheets().values().update(
+        insert_data_option = "INSERT_ROWS"
+        result = service.spreadsheets().values().append(
             spreadsheetId=spreadsheet_id, range=range_name,
-            valueInputOption=value_input_option, body=body).execute()
+            valueInputOption=value_input_option, body=body, insertDataOption=insert_data_option).execute()
 
-    def first_empty_row(self, sheet):
-        all = sheet.get_all_values()
-        row_num = 1
-        consecutive = 0
-        for row in all:
-            flag = False
-            for col in row:
-                if col != "":
-                    # something is there!
-                    flag = True
-                    break
-
-            if flag:
-                consecutive = 0
-            else:
-                # empty row
-                consecutive += 1
-
-            if consecutive == 2:
-                # two consecutive empty rows
-                return row_num - 1
-            row_num += 1
-        # every row filled
-        return row_num
+   
