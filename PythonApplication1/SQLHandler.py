@@ -29,10 +29,10 @@ class SQLHandler(object):
     def insertRow(self, submissionid, commentid, linkstring, author, body, banned_by):
         strQuery = "insert into logs (submissionid, commentid, linkString, author, body, banned_by, datelogged, iteration) values "
         strQuery += "( '" + str(submissionid) + "', '" 
-        strQuery += str(commentid) + "', '" 
+        strQuery += ('null' if commentid is None else str(commentid)) + "', '" 
         strQuery += str(linkstring) + "', '" 
         strQuery += str(author) + "', '" 
-        strQuery += str(body) + "', '" 
+        strQuery += str(body).replace("'", "") + "', '" 
         strQuery += str(banned_by) + "', "
         strQuery += " now(), "
         strQuery += str(self.iteration) + ");"
@@ -53,8 +53,13 @@ class SQLHandler(object):
         return len(rows) > 0;
 
     #Return all rows from this iteration
-    def getAllFromThisIteration(self):
-        strQuery = "select * from logs where iteration = " + str(self.iteration) + ";"
+    def getAllCommentsFromThisIteration(self):
+        strQuery = "select * from logs where iteration = " + str(self.iteration) + " and commentid != 'null';"
+        self.cursor.execute(strQuery)
+        return self.cleanRows(self.cursor.fetchall());
+
+    def getAllSubmissionsFromThisIteration(self):
+        strQuery = "select * from logs where iteration = " + str(self.iteration) + " and commentid = 'null';"
         self.cursor.execute(strQuery)
         return self.cleanRows(self.cursor.fetchall());
 

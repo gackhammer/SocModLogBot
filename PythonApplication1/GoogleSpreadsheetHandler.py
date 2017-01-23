@@ -39,7 +39,7 @@ class GoogleSpreadsheetHandler(object):
         if not os.path.exists(credential_dir):
             os.makedirs(credential_dir)
         credential_path = os.path.join(credential_dir,
-                                       'client_secrets.json')
+                                       'sheets.googleapis.com-python-quickstart.json')
 
         store = Storage(credential_path)
         credentials = store.get()
@@ -53,13 +53,8 @@ class GoogleSpreadsheetHandler(object):
             print('Storing credentials to ' + credential_path)
         return credentials
 
-    def writeToSheet(self, rows):
-        """Shows basic usage of the Sheets API.
+    def writeToSheet(self, rows, bComments):
 
-        Creates a Sheets API service object and prints the names and majors of
-        students in a sample spreadsheet:
-        https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-        """
         credentials = self.get_credentials()
         http = credentials.authorize(httplib2.Http())
         discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
@@ -70,7 +65,7 @@ class GoogleSpreadsheetHandler(object):
 
         spreadsheet_id = '1YuAjfZ04yUnb0zZH-v784D0a2Xo3M5-QBRNEkFM210U'
 
-        range_name = '!A2:I'
+        range_name = 'Comments' if bComments is True else 'Submissions' + '!A2:I'
         #range_name = '!A' + self.first_empty_row(sheets[0]) + ':G'
 
         body = {

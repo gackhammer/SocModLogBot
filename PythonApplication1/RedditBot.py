@@ -20,25 +20,43 @@ class RedditBot(object):
 		self.subredditName = subreddit_name;
 
     # Return ceddit link to show comment in ceddit.com 
-	def getCedditURL(self, comment):
+	def getCedditCommentURL(self, comment):
 		return "https://www.ceddit.com/r/" + self.subredditName + "/comments/" + comment.submission.id + "/_/" + comment.id;
+
+	def getCedditSubmissionURL(self, submission):
+		return "https://www.ceddit.com/r/" + self.subredditName + "/comments/" + submission.id;
 
 
     # Check to see if the submission has been removed by lack of author name or submission was banned
-	def submission_is_removed(self, sub_id):
-		s = r.get_submission(submission_id=sub_id)
+	def submission_is_removed(self, submission):
 		try:
-			author = str(s.author.name)
+			author = str(submission.author.name)
 		except:
 			author = '[Deleted]'
-		if not s.banned_by is None or author is '[Deleted]':
-			if not s.banned_by in modsWhoDeleted:
-				self.modsWhoDeleted.append(s.banned_by)
+		if not submission.banned_by is None or author is '[Deleted]':
+			if not submission.banned_by in modsWhoDeleted:
+				self.modsWhoDeleted.append(submission.banned_by)
 			return True
-		elif s.author is None or s.body is '[Deleted]':
+		elif submission.author is None or submission.selftext  is '[Deleted]':
 			return True
 		else:
 			return False
+
+
+	def submission_is_removed2(self, submission):
+		if not submission.banned_by is None:
+			return True
+		try:
+			author = str(submission.author.name)
+			return
+		except:
+			try:
+				submission.remove()
+				submission.approve()
+				return
+			except:
+				return True
+
 
     # Check to see if the comment has been removed by lack of author name or comment was banned
 	def comment_is_removed(self,comment):
@@ -65,7 +83,22 @@ class RedditBot(object):
 		time = comment.created
 		return str(datetime.datetime.time)
 
-    # Loops through Comments object to handle removed comments and logging them into the Google Spreadsheet
+
+    # Check submission to handle removed submission and logging them into the database
+	def checkSubmission(self,submission):
+		if(self.submission_is_removed2(submission)):
+			if(self.SQLHandler.checkSubmissionID(submission.id)):
+			    return False
+			else:
+			    print("submission WAS deleted");
+			    authorName = "[Deleted]" if submission.author is None else submission.author.name
+			    bannedBy = "" if submission.banned_by is None else submission.banned_by
+			    self.SQLHandler.insertRow(submission.id, None, self.getCedditSubmissionURL(submission), authorName, submission.selftext , bannedBy);
+			    return True;
+			return False;
+
+
+    # Loops through Comments object to handle removed comments and logging them into the database
 	def checkComments(self,comments):
 		for comment in comments:
 			self.checkIfItsMyComment(comment)
@@ -76,8 +109,7 @@ class RedditBot(object):
 				self.deletedCommentsList.append(comment)
 				authorName = "[Deleted]" if comment.author is None else comment.author.name
 				bannedBy = "" if comment.banned_by is None else comment.banned_by
-				self.SQLHandler.insertRow(comment.submission.id, comment.id, self.getCedditURL(comment), authorName, comment.body, bannedBy);
-				#self.sheetHandler.writeToSheet(comment.submission.id, comment.id, self.getCedditURL(comment), authorName, comment.body, bannedBy );
+				self.SQLHandler.insertRow(comment.submission.id, comment.id, self.getCedditCommentURL(comment), authorName, comment.body, bannedBy);
 			self.checkComments(comment.replies)
 
     # Return comma separated string of mods
@@ -124,8 +156,13 @@ class RedditBot(object):
 		except: 
 			print("archived post")	
 
-	def writeRowsToSpreadsheet(self):
-		rows = self.SQLHandler.getAllFromThisIteration();
-		self.sheetHandler.writeToSheet(rows);
+	def writeCommentRowsToSpreadsheet(self):
+		rows = self.SQLHandler.getAllCommentsFromThisIteration();
+		self.sheetHandler.writeToSheet(rows, True);
+
+
+	def writeSubmissionRowsToSpreadsheet(self):
+		rows = self.SQLHandler.getAllSubmissionsFromThisIteration();
+		self.sheetHandler.writeToSheet(rows, False);
 
 	
